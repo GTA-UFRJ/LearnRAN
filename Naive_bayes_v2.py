@@ -1,5 +1,6 @@
 from sklearn.naive_bayes import GaussianNB
 import numpy as np
+from itertools import combinations
 
 from sklearn.metrics import (
     accuracy_score,
@@ -25,6 +26,11 @@ for j in l2:
     mtc[j] = ues[j]
 for m in l3: 
     urllc[m] = ues[m]
+
+n_elements = [0,1,2,3,4]
+comb_2 = list(combinations(n_elements,2))
+comb_3 = list(combinations(n_elements,3))
+comb_4 = list(combinations(n_elements,4))
 
 def NaiveBayes (a):
     rng = np.random.default_rng(seed=a)
@@ -53,7 +59,14 @@ def NaiveBayes (a):
     test_class = np.array(['embb','embb','embb','embb','mtc','mtc','mtc','mtc','urllc','urllc','urllc','urllc','urllc'])
     test_data2 = test_data
 
-
+    print (test_data)
+    classifier.fit(training_data, training_class)
+    predictions = classifier.predict(test_data)
+    Accuracy = accuracy_score(predictions,test_class)
+    f1 = f1_score (predictions,test_class, average="weighted")
+    #print("Accuracy:" + str(Accuracy) + ' ; ' + "F1 Score:" + str(f1))
+    print('k,k,k,k,' + str(Accuracy) + ',' + str(f1))
+    
     for k in range (5):
         training_inf = np.delete(training_data2, k, 1)
         test_inf = np.delete(test_data2, k, 1)
@@ -64,40 +77,38 @@ def NaiveBayes (a):
         #print('after ' + str(k) + ' st column deleted -> ' + "Accuracy:" + str(Accuracy) + ' ; ' + "F1 Score:" + str(f1))
         print( str(k) +',k,k,k,' + str(Accuracy) + ',' + str(f1))
         
-        for j in range (5):
-            if k == j: continue 
-            training_inf = np.delete(training_data2, [k,j], 1)
-            test_inf = np.delete(test_data2, [k,j], 1)
+    for l in (comb_2):
+            training_inf = np.delete(training_data2, [l[0],l[1]], 1)
+            test_inf = np.delete(test_data2, [l[0],l[1]], 1)
             classifier.fit(training_inf, training_class)
             predictions = classifier.predict(test_inf)
             Accuracy = accuracy_score(predictions,test_class)
             f1 = f1_score (predictions,test_class, average="weighted")
-            #print('after ' + str(k) + " and " + str(j) + ' st column deleted -> ' + "Accuracy:" + str(Accuracy) + ' ; ' + "F1 Score:" + str(f1))
-            print( str(k) + "," + str(j) + ',k,k,' + str(Accuracy) + ',' + str(f1))
+            #print('after ' + str(l[0]) + " and " + str(l[1]) + ' st column deleted -> ' + "Accuracy:" + str(Accuracy) + ' ; ' + "F1 Score:" + str(f1))
+            print( str(l[0]) + "," + str(l[1]) + ',k,k,' + str(Accuracy) + ',' + str(f1))
 
-            for l in range (5):
-                if k == j or k == l or l == j: continue
-                training_inf = np.delete(training_data2, [k,j,l], 1)
-                test_inf = np.delete(test_data2, [k,j,l], 1)
-                classifier.fit(training_inf, training_class)
-                predictions = classifier.predict(test_inf)
-                Accuracy = accuracy_score(predictions,test_class)
-                f1 = f1_score (predictions,test_class, average="weighted")
-                #print('after ' + str(k) + ", " + str(j) + " and " + str(l) + ' st column deleted -> ' + "Accuracy:" + str(Accuracy) + ' ; ' + "F1 Score:" + str(f1))
-                print( str(k) + "," + str(j) + "," + str(l) +',k,' + str(Accuracy) + ',' + str(f1))
+    for m in (comb_3):
+            training_inf = np.delete(training_data2, [m[0],m[1],m[2]], 1)
+            test_inf = np.delete(test_data2, [m[0],m[1],m[2]], 1)
+            classifier.fit(training_inf, training_class)
+            predictions = classifier.predict(test_inf)
+            Accuracy = accuracy_score(predictions,test_class)
+            f1 = f1_score (predictions,test_class, average="weighted")
+            #print('after ' + str(m[0]) + ", " + str(m[1]) + " and " + str(m[2]) + ' st column deleted -> ' + "Accuracy:" + str(Accuracy) + ' ; ' + "F1 Score:" + str(f1))
+            print( str(m[0]) + "," + str(m[1]) + "," + str(m[2]) +',k,' + str(Accuracy) + ',' + str(f1))
 
-                for m in range (5):
-                    if k == j or k == l or l == j or m == j or m == k or m == l: continue
-                    training_inf = np.delete(training_data2, [k,j,l,m], 1)
-                    test_inf = np.delete(test_data2, [k,j,l,m], 1)
-                    classifier.fit(training_inf, training_class)
-                    predictions = classifier.predict(test_inf)
-                    Accuracy = accuracy_score(predictions,test_class)
-                    f1 = f1_score (predictions,test_class, average="weighted")
-                    #print('after ' + str(k) + ", " + str(j) + ", " + str(l) + " and " + str(m) + ' st column deleted -> ' + "Accuracy:" + str(Accuracy) + ' ; ' + "F1 Score:" + str(f1))
-                    print( str(k) + "," + str(j) + "," + str(l) + "," +str(m) +  "," + str(Accuracy) + ',' + str(f1))
+    for n in (comb_4):
+            training_inf = np.delete(training_data2, [n[0],n[1],n[2],n[3]], 1)
+            test_inf = np.delete(test_data2, [n[0],n[1],n[2],n[3]], 1)
+            classifier.fit(training_inf, training_class)
+            predictions = classifier.predict(test_inf)
+            Accuracy = accuracy_score(predictions,test_class)
+            f1 = f1_score (predictions,test_class, average="weighted")
+            #print('after ' + str(n[0]) + ", " + str(n[1]) + ', ' + str(n[1]) + " and " + str(n[3]) + ' st column deleted -> ' + "Accuracy:" + str(Accuracy) + ' ; ' + "F1 Score:" + str(f1))
+            print( str(n[0]) + "," + str(n[1]) + "," + str(n[2]) + ',' + str(n[3]) + ',' + str(Accuracy) + ',' + str(f1))
 
 
-print(NaiveBayes (4))
+print(NaiveBayes (39))
+
 
 
