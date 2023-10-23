@@ -7,12 +7,13 @@ from sklearn.metrics import (
     f1_score)
 import numpy as np
 from itertools import combinations
+import data_location from config.py
 
 classifier = KNeighborsClassifier(n_neighbors=3)
 ues = {}
 for i in range (1,41):
     a = 'ue'+str(i)+'.txt'
-    with open ("//lab//users//Cruz//vivian//LearnRAN//Data//"+a) as b:
+    with open (data_location+a) as b:
         ues[i]= eval('['+b.read()+']')
 
 keys = ues.keys()
@@ -39,7 +40,11 @@ def NaiveBayes (a,k):
     for i in l1+l2+l3:
         ue_data += [ues[i]]
     ue_data = np.array(ue_data)
-    ue_class = np.array(['embb','embb','embb','embb','embb','embb','embb','embb','embb','embb','embb','embb','mtc','mtc','mtc','mtc','mtc','mtc','mtc','mtc','mtc','mtc','mtc','mtc','urllc','urllc','urllc','urllc','urllc','urllc','urllc','urllc','urllc','urllc','urllc','urllc','urllc','urllc','urllc','urllc'])
+    ue_class = np.array(['embb','embb','embb','embb','embb','embb','embb','embb',
+                         'embb','embb','embb','embb','mtc','mtc','mtc','mtc','mtc',
+                         'mtc','mtc','mtc','mtc','mtc','mtc','mtc','urllc','urllc',
+                         'urllc','urllc','urllc','urllc','urllc','urllc','urllc',
+                         'urllc','urllc','urllc','urllc','urllc','urllc','urllc'])
     ue_data2 = ue_data
     
     kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=a)
@@ -71,7 +76,6 @@ def NaiveBayes (a,k):
             accuracy_scores.append(Accuracy)
         mean_accuracy = np.mean(accuracy_scores)
         std_accuracy = np.std(accuracy_scores)
-        #print('after ' + str(k) + ' st column deleted -> ' + "Accuracy:" + str(Accuracy) + ' ; ' + "F1 Score:" + str(f1))
         print( str(k) +',k,k,k,' + str(Accuracy) + ',' + str(std_accuracy))
     
     for l in comb_2:
@@ -85,8 +89,8 @@ def NaiveBayes (a,k):
             accuracy_scores.append(Accuracy)
         mean_accuracy = np.mean(accuracy_scores)
         std_accuracy = np.std(accuracy_scores)
-        #print('after ' + str(l[0]) + " and " + str(l[1]) + ' st column deleted -> ' + "Accuracy:" + str(Accuracy) + ' ; ' + "F1 Score:" + str(f1))
-        print( str(l[0]) + "," + str(l[1]) + ',k,k,' + str(mean_accuracy) + ',' + str(std_accuracy))
+        print( str(l[0]) + "," + str(l[1]) + ',k,k,' + str(mean_accuracy) + ',' + 
+              str(std_accuracy))
         
     for m in comb_3:
         data_inf = np.delete(ue_data2, [m[0],m[1],m[2]], 1)
@@ -99,8 +103,8 @@ def NaiveBayes (a,k):
             accuracy_scores.append(Accuracy)
         mean_accuracy = np.mean(accuracy_scores)
         std_accuracy = np.std(accuracy_scores)
-        #print('after ' + str(m[0]) + ", " + str(m[1]) + " and " + str(m[2]) + ' st column deleted -> ' + "Accuracy:" + str(Accuracy) + ' ; ' + "F1 Score:" + str(f1))
-        print( str(m[0]) + "," + str(m[1]) + "," + str(m[2]) +',k,' + str(mean_accuracy) + ',' + str(std_accuracy))
+        print( str(m[0]) + "," + str(m[1]) + "," + str(m[2]) +',k,' + str(mean_accuracy) 
+              + ',' + str(std_accuracy))
 
     for n in comb_4:
         data_inf = np.delete(ue_data2, [n[0],n[1],n[2],n[3]], 1)
@@ -113,8 +117,8 @@ def NaiveBayes (a,k):
             accuracy_scores.append(Accuracy)
         mean_accuracy = np.mean(accuracy_scores)
         std_accuracy = np.std(accuracy_scores)
-        #print('after ' + str(n[0]) + ", " + str(n[1]) + ', ' + str(n[1]) + " and " + str(n[3]) + ' st column deleted -> ' + "Accuracy:" + str(Accuracy) + ' ; ' + "F1 Score:" + str(f1))
-        print( str(n[0]) + "," + str(n[1]) + "," + str(n[2]) + ',' + str(n[3]) + ',' + str(mean_accuracy) + ',' + str(std_accuracy))
+        print( str(n[0]) + "," + str(n[1]) + "," + str(n[2]) + ',' + str(n[3]) + ',' + 
+              str(mean_accuracy) + ',' + str(std_accuracy))
 
 print(NaiveBayes (51,3))
 
