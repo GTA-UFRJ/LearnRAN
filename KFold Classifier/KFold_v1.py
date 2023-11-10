@@ -1,3 +1,5 @@
+"""Author: Vivian Maria da Silva e Souza 
+Instutution: Coppe Del UFRJ"""
 from sklearn.naive_bayes import GaussianNB
 from sklearn import utils
 from sklearn.model_selection import StratifiedKFold
@@ -43,45 +45,36 @@ pd.options.display.max_rows = 9999
 
 classifier = GaussianNB()
 ues = {}
-embb_ues_data, mtc_ues_data, urllc_ues_data = [],[],[]
-n_embb_ues, n_mtc_ues, n_urllc_ues = 0,0,0
+
 def data_processing (data_list,n_ue):
-    dl_mcs, dl_turbo, dl_brate, ul_mcs, ul_brate = 0,0,0,0,0
+    dl_mcs, dl_brate, ul_mcs, ul_brate = 0,0,0,0
     last_time = 0
     for j in range (1,len(data_list)):
-        time = data_list[j][0] - data_list[j-1][0]
-        if np.isinf(data_list[j-1][1]) or np.isinf(data_list[j-1][2]) or np.isinf(data_list[j-1][3]) or np.isinf(data_list[j-1][4]) or np.isinf(data_list[j-1][5]): continue 
-        last_time += time
-        dl_mcs += data_list[j-1][1] * time
-        dl_turbo += data_list[j-1][2] * time
-        dl_brate += data_list[j-1][3] * time
-        ul_mcs += data_list[j-1][4] * time
-        ul_brate += data_list[j-1][5] * time
+        time_interval = data_list[j][0] - data_list[j-1][0]
+        if np.isinf(data_list[j-1][1]) or np.isinf(data_list[j-1][2]) or np.isinf(data_list[j-1][3]) or np.isinf(data_list[j-1][4]): continue 
+        last_time += time_interval
+        dl_mcs += data_list[j-1][1] * time_interval
+        dl_brate += data_list[j-1][2] * time_interval
+        ul_mcs += data_list[j-1][3] * time_interval
+        ul_brate += data_list[j-1][4] * time_interval
 
     dl_mcs = dl_mcs/last_time
-    dl_turbo = dl_turbo/last_time
     dl_brate = dl_brate/last_time
     ul_mcs = ul_mcs/last_time
     ul_brate = ul_brate/last_time                  
-    data = [dl_mcs, dl_turbo, dl_brate, ul_mcs, ul_brate]
+    data = [dl_mcs, dl_brate, ul_mcs, ul_brate]
 
     if str(n_ue) in embb_ues: 
         class_ue = 'embb'
-        global embb_ues_data 
-        embb_ues_data.append(data)
     elif str(n_ue) in mtc_ues:
         class_ue = 'mtc'
-        global mtc_ues_data 
-        mtc_ues_data.append(data)
     else: 
         class_ue = 'urllc'
-        global urllc_ues_data 
-        urllc_ues_data.append(data)
     return data,class_ue
 
 # opening files and calling data_processing
-ue_data, ue_classes = [],[]
-wished_cols = [0,7,9,10,13,15]
+
+wished_cols = [0,7,10,13,15]
 for n_tr in range (18):
     tr = 'tr' + str(n_tr) + '/'
     for n_exp in range (1,7): 
@@ -99,42 +92,36 @@ for n_tr in range (18):
                     inf_ue = np.array(inf_ue)
                     data = data_processing (inf_ue,n_ue)
                     ues[traffic_case+tr+exp+bs+a] = data
-                    #ue_data.append(data[0])
-                    #ue_classes.append(data[1])
                 except FileNotFoundError: pass
 
-def data_used (b,c):
-    rng = np.random.default_rng(seed=b)
-    print (embb_ues_data)
-    len_embb = len(embb_ues_data)//3
-    len_mtc = len(mtc_ues_data)//3
-    len_urllc = len(urllc_ues_data)//3
-    rng.shuffle(embb_ues_data)
-    rng.shuffle(mtc_ues_data)
-    rng.shuffle(urllc_ues_data)
-    rng.shuffle(embb_ues_data)
-    rng.shuffle(mtc_ues_data)
-    rng.shuffle(urllc_ues_data)
-    embb_ues_data_used = embb_ues_data[len_embb:]
-    embb_ues_data_notused = embb_ues_data[:len_embb]
-    mtc_ues_data_used = mtc_ues_data[len_mtc:]
-    mtc_ues_data_notused = mtc_ues_data[:len_mtc]
-    urllc_ues_data_used = urllc_ues_data[len_urllc:]
-    urllc_ues_data_notused = urllc_ues_data[:len_urllc]
-    ue_data = embb_ues_data_used + mtc_ues_data_used + mtc_ues_data_used
-    ue_classes = ['embb'] * len(embb_ues_data_used) + ['mtc'] * len(mtc_ues_data_used) + ['urllc'] * len(urllc_ues_data_used)
-    #x,y =  utils.shuffle(ue_data, ue_classes,random_state = c)
+def data_used (b):
+    ue_data, ue_classes = [],[]
+
+    all_samples = list(ues.keys())
+    all_labels = [value[1] for value in ues.values()]  
+
+    used_samples, notused_samples, used_labels, notused_labels = train_test_split(
+    all_samples, all_labels, test_size=1/3, stratify=all_labels, random_state=b)
+
+    ues_used = {sample: ues[sample] for sample in used_samples}
+    ues_notused = {sample: ues[sample] for sample in notused_samples}
+
+    for n in ues_used:
+        ue_data.append(ues_used[n][0])
+        ue_classes.append(ues_used[n][1])
+
     return ue_data,ue_classes
 
 
-def K_Fold (a,k_fold,b,c):
-    ue_data_classifier, ue_classes_classifier = data_used (b,c)
-    ue_data_classifier = np.array(ue_data)
-    ue_classes_classifier = np.array(ue_classes)
-    print (ue_classes_classifier)
-    print (ue_data_classifier)
+def gb_classifier (a,k_fold,b):
+    n = data_used (b)
+    ue_data_classifier = n[0]
+    ue_classes_classifier = n[1]
+    ue_data_classifier = np.array(ue_data_classifier)
+    ue_classes_classifier = np.array(ue_classes_classifier)
 
     kf = StratifiedKFold(n_splits=k_fold, shuffle=True, random_state=a)
+
     accuracy_scores = []
     for train_index, test_index in kf.split(ue_data_classifier,ue_classes_classifier):
         data_train, data_test = ue_data_classifier[train_index], ue_data_classifier[test_index]
@@ -152,8 +139,4 @@ def K_Fold (a,k_fold,b,c):
     result = str(mean_accuracy) + ' ; ' + str(std_accuracy)
     return result
     
-print(K_Fold (8,3,1,5))
-
-
-
- 
+print(gb_classifier (8,3,1))
