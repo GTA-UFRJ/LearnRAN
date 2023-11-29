@@ -183,20 +183,25 @@ def mlp_classifier (a,k_fold,b,n):
 
 def knn_classifier (a,k_fold,b):
     kf = kfold (a, k_fold, b,ues)
-    data_train = kf[0]
-    data_test = kf[2]
-    class_train = kf[1]
-    class_test = kf[3]
+    datas_train = kf[0]
+    datas_test = kf[2]
+    classes_train = kf[1]
+    classes_test = kf[3]
     centroid_classifier = NearestCentroid()
     accuracy_scores = []
     for i in range(k_fold):
-        centroid_classifier.fit(data_train[i])
-        predictions = centroid_classifier.predict(data_test[i])
+        data_train = datas_train[i]
+        data_test = datas_test[i]
+        class_train = classes_train[i]
+        class_test = classes_test[i]
+        centroid_classifier.fit(data_train,class_train.values.ravel())
+        predictions = centroid_classifier.predict(data_test)
         print(predictions)
-        accuracy = accuracy_score(predictions,class_test[i])
+        accuracy = accuracy_score(predictions,class_test)
         accuracy_scores.append(accuracy)
-        confusion_matrixes = confusion_matrix(class_test[i], predictions, labels=["embb", "mtc", "urllc"])
+        confusion_matrixes = confusion_matrix(class_test, predictions, labels=["embb", "mtc", "urllc"])
         print (confusion_matrixes)
+        print(f"Model Classification Report : \n{classification_report(class_test, predictions)}")
 
     mean_accuracy = np.mean(accuracy_scores)
     std_accuracy = np.std(accuracy_scores)
