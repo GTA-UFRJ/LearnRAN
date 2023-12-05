@@ -1,0 +1,28 @@
+Best parameters found:
+ {'activation': 'relu', 'alpha': 0.05, 'hidden_layer_sizes': (100, 100, 100, 100, 100, 100, 100, 100, 100, 100), 'learning_rate': 'adaptive', 'solver': 'adam'} nº iterations 200
+foi escolhido 0.05 como alpha por ser um valor intermediário 
+
+Naive bayes
+[[1287  187  281]
+ [   1 1074  303]
+ [   3   24 1853]]
+
+0.8406144025533613
+MLP
+[[1428  145  182]
+ [  49 1250   79]
+ [  34   29 1817]]
+
+Results on the test set:
+              precision    recall  f1-score   support
+
+        embb       0.95      0.81      0.87      1755
+         mtc       0.88      0.91      0.89      1378
+       urllc       0.87      0.97      0.92      1880
+
+    accuracy                           0.90      5013
+   macro avg       0.90      0.90      0.89      5013
+weighted avg       0.90      0.90      0.90      5013
+
+0.8966686614801516
+

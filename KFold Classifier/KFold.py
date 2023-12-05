@@ -101,6 +101,7 @@ for n_tr in range (18):
 
 def data_used (b,ues):
     ue_data, ue_classes = [],[]
+    ue_data_nu, ue_classes_nu = [],[]
     len = []
     ues_sl = same_len(ues)
     all_samples = list(ues_sl.keys())
@@ -116,7 +117,11 @@ def data_used (b,ues):
         ue_data.append(ues_used[n][0])
         ue_classes.append(ues_used[n][1])
 
-    return ue_data,ue_classes
+    for n in ues_notused:
+        ue_data_nu.append(ues_notused[n][0])
+        ue_classes_nu.append(ues_notused[n][1])
+
+    return ue_data,ue_classes,ue_data_nu,ue_classes_nu
 
 def same_len (dic):
     len_max = 0
@@ -127,19 +132,19 @@ def same_len (dic):
             n = np.append(dic[n], [0,0])
     return dic
 
-def gb_classifier (a,k_fold,b):
+def gb_classifier_kf (a,k_fold,b):
     kf = kfold (a, k_fold, b, ues_av)
     data_train = kf[0]
-    data_test = kf[2]
+    data_validation = kf[2]
     class_train = kf[1]
-    class_test = kf[3]
+    class_validation = kf[3]
     accuracy_scores = []
     for i in range(3):
         classifier.fit(data_train[i], class_train[i])
-        predictions = classifier.predict(data_test[i])
-        accuracy = accuracy_score(predictions,class_test[i])
+        predictions = classifier.predict(data_validation[i])
+        accuracy = accuracy_score(predictions,class_validation[i])
         accuracy_scores.append(accuracy)
-        confusion_matrixes = confusion_matrix(class_test[i], predictions, labels=["embb", "mtc", "urllc"])
+        confusion_matrixes = confusion_matrix(class_validation[i], predictions, labels=["embb", "mtc", "urllc"])
         print (confusion_matrixes)
 
     mean_accuracy = np.mean(accuracy_scores)
@@ -148,30 +153,30 @@ def gb_classifier (a,k_fold,b):
     result = str(mean_accuracy) + ' ; ' + str(std_accuracy)
     return result
 
-def mlp_classifier (a,k_fold,b,n):
+def mlp_classifier_kf (a,k_fold,b,n):
     mlp_gs = MLPClassifier(max_iter=n)
-    parameter_space = { 'hidden_layer_sizes': [(50,50,50,50,50)],
-                        'activation': ['tanh', 'relu'], 'solver': ['adam'], 'alpha': [0.0001, 0.05], 
+    parameter_space = { 'hidden_layer_sizes': [(100,100,100,100,100,100,100,100,100,100)],
+                        'activation': ['tanh', 'relu'], 'solver': ['adam'], 'alpha': [0.1, 0.01, 0.0001, 0.05], 
                         'learning_rate': ['constant','adaptive'], }
     clf = GridSearchCV(mlp_gs, parameter_space, n_jobs=-1, cv=6)
    
     kf = kfold (a, k_fold, b, ues_av)
     data_train = kf[0]
-    data_test = kf[2]
+    data_validation = kf[2]
     class_train = kf[1]
-    class_test = kf[3]
+    class_validation = kf[3]
     accuracy_scores = []
     for i in range(3):
         clf.fit(data_train[i], class_train[i])
-        predictions = clf.predict(data_test[i])
-        accuracy = accuracy_score(predictions,class_test[i])
+        predictions = clf.predict(data_validation[i])
+        accuracy = accuracy_score(predictions,class_validation[i])
         accuracy_scores.append(accuracy)
-        confusion_matrixes = confusion_matrix(class_test[i], predictions, labels=["embb", "mtc", "urllc"])
+        confusion_matrixes = confusion_matrix(class_validation[i], predictions, labels=["embb", "mtc", "urllc"])
         print (confusion_matrixes)
         print()
-        print('Best parameters found:\n', clf.best_params_)
+        print('Best parameters found:\n', clf.best_params_,'nº iterations',str(n))
         print()
-        y_true, y_pred = class_test[i] , predictions
+        y_true, y_pred = class_validation[i] , predictions
         print('Results on the test set:')
         print(classification_report(y_true, y_pred))
 
@@ -179,38 +184,47 @@ def mlp_classifier (a,k_fold,b,n):
     std_accuracy = np.std(accuracy_scores)
     print (accuracy_scores)
     result = str(mean_accuracy) + ' ; ' + str(std_accuracy)
-    return result
 
-def knn_classifier (a,k_fold,b):
-    kf = kfold (a, k_fold, b,ues)
-    datas_train = kf[0]
-    datas_test = kf[2]
-    classes_train = kf[1]
-    classes_test = kf[3]
-    centroid_classifier = NearestCentroid()
-    accuracy_scores = []
-    for i in range(k_fold):
-        data_train = datas_train[i]
-        data_test = datas_test[i]
-        class_train = classes_train[i]
-        class_test = classes_test[i]
-        centroid_classifier.fit(data_train,class_train.values.ravel())
-        predictions = centroid_classifier.predict(data_test)
-        print(predictions)
-        accuracy = accuracy_score(predictions,class_test)
-        accuracy_scores.append(accuracy)
-        confusion_matrixes = confusion_matrix(class_test, predictions, labels=["embb", "mtc", "urllc"])
-        print (confusion_matrixes)
-        print(f"Model Classification Report : \n{classification_report(class_test, predictions)}")
+##Naive Bayes without KFold
+def gb_classifier (b):
+    aux = data_used(b,ues_av)
+    ue_data_train = aux[0]
+    ue_class_train = aux[1]
+    ue_data_test = aux[2]
+    ue_class_test = aux[3]
+    classifier.fit(ue_data_train,ue_class_train)
+    predictions = classifier.predict(ue_data_test)
+    accuracy = accuracy_score(predictions,ue_class_test)
+    confusion_matrixes = confusion_matrix(ue_class_test, predictions, labels=["embb", "mtc", "urllc"])
+    print (confusion_matrixes)
+    print()
+    return accuracy
 
-    mean_accuracy = np.mean(accuracy_scores)
-    std_accuracy = np.std(accuracy_scores)
-    print (accuracy_scores)
-    result = str(mean_accuracy) + ' ; ' + str(std_accuracy)
-    return result
+## MLP without KFold
+def mlp_classifier (b,n):
+    mlp_gs = MLPClassifier(max_iter=n)
+    parameter_space = { 'hidden_layer_sizes': [(100,100,100,100,100,100,100,100,100,100)],
+                        'activation': ['relu'], 'solver': ['adam'], 'alpha': [0.05], 
+                        'learning_rate': ['adaptive'],}
+    clf = GridSearchCV(mlp_gs, parameter_space, n_jobs=-1, cv=6)
+    aux = data_used(b,ues_av)
+    ue_data_train = aux[0]
+    ue_class_train = aux[1]
+    ue_data_test = aux[2]
+    ue_class_test = aux[3]
+    clf.fit(ue_data_train, ue_class_train)
+    predictions = clf.predict(ue_data_test)
+    accuracy = accuracy_score(predictions,ue_class_test)
+    confusion_matrixes = confusion_matrix(ue_class_test, predictions, labels=["embb", "mtc", "urllc"])
+    print (confusion_matrixes)
+    print()
+    y_true, y_pred = ue_class_test, predictions
+    print('Results on the test set:')
+    print(classification_report(y_true, y_pred))
+    return accuracy
 
 def kfold (a, k_fold,b,ue):
-    datas_train, datas_test, classes_train, classes_test = [],[],[],[]
+    datas_train, datas_validation, classes_train, classes_validation = [],[],[],[]
     n = data_used (b,ue)
     ue_data_classifier = n[0]
     ue_classes_classifier = n[1]
@@ -218,17 +232,15 @@ def kfold (a, k_fold,b,ue):
     ue_classes_classifier = np.array(ue_classes_classifier)
     kf = StratifiedKFold(n_splits=k_fold, shuffle=True, random_state=a)
     for train_index, test_index in kf.split(ue_data_classifier,ue_classes_classifier):
-        data_train, data_test = ue_data_classifier[train_index], ue_data_classifier[test_index]
-        class_train, class_test = ue_classes_classifier[train_index], ue_classes_classifier[test_index]
-        datas_test.append(data_test)
+        data_train, data_validation = ue_data_classifier[train_index], ue_data_classifier[test_index]
+        class_train, class_validation = ue_classes_classifier[train_index], ue_classes_classifier[test_index]
+        datas_validation.append(data_validation)
         datas_train.append(data_train)
-        classes_test.append(class_test)
+        classes_validation.append(class_validation)
         classes_train.append(class_train)
-    return datas_train,classes_train,datas_test,classes_test
+    return datas_train,classes_train,datas_validation,classes_validation
 
 print ('Naive bayes')
-print (gb_classifier(1,3,5))
+print (gb_classifier(1))
 print ('MLP')
-print (mlp_classifier(1,3,5,50))
-print ('KNN')
-print (knn_classifier(1,3,5))
+print (mlp_classifier(1,200))
