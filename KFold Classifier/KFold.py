@@ -1,5 +1,6 @@
 """Author: Vivian Maria da Silva e Souza 
 Instutution: Coppe Del UFRJ"""
+import pickle
 from sklearn.naive_bayes import GaussianNB
 from sklearn import utils
 from sklearn.model_selection import StratifiedKFold
@@ -43,7 +44,8 @@ embb_ues = config['DEFAULT']['default_embb_ues']
 mtc_ues = config['DEFAULT']['default_mtc_ues']
 urllc_ues = config['DEFAULT']['default_urllc_ues']
 
-possible_cases = [rome_slow_close_dir, rome_static_close_dir, rome_static_far_dir, rome_static_medium_dir]
+possible_cases = [rome_slow_close_dir, rome_static_close_dir, 
+                  rome_static_far_dir, rome_static_medium_dir]
 
 pd.options.display.max_rows = 9999
 
@@ -56,7 +58,8 @@ def calculate_rates_classifier (data_list,n_ue):
     data = []
     for j in range (1,len(data_list)):
         time_interval = data_list[j][0] - data_list[j-1][0]
-        if np.isinf(data_list[j-1][1]) or np.isinf(data_list[j-1][2]): continue 
+        if np.isinf(data_list[j-1][1]) or np.isinf(data_list[j-1][2]): 
+            continue 
         data.append(data_list[j][1:])
         weights_times.append(time_interval)
         dl_brate.append(data_list[j-1][1])
@@ -184,6 +187,7 @@ def mlp_classifier_kf (a,k_fold,b,n):
     std_accuracy = np.std(accuracy_scores)
     print (accuracy_scores)
     result = str(mean_accuracy) + ' ; ' + str(std_accuracy)
+    return result
 
 ##Naive Bayes without KFold
 def gb_classifier (b):
@@ -198,6 +202,9 @@ def gb_classifier (b):
     confusion_matrixes = confusion_matrix(ue_class_test, predictions, labels=["embb", "mtc", "urllc"])
     print (confusion_matrixes)
     print()
+    filename = 'modelo_NaiveBayes.pkl'
+    with open(filename, 'wb') as file:
+        pickle.dump(classifier,file)
     return accuracy
 
 ## MLP without KFold
@@ -221,6 +228,9 @@ def mlp_classifier (b,n):
     y_true, y_pred = ue_class_test, predictions
     print('Results on the test set:')
     print(classification_report(y_true, y_pred))
+    filename = 'modelo_MLP.pkl'
+    with open(filename, 'wb') as file:
+        pickle.dump(classifier,file)
     return accuracy
 
 def kfold (a, k_fold,b,ue):
