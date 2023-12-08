@@ -16,7 +16,7 @@ import pandas as pd
 # import csv
 from sklearn.preprocessing import StandardScaler
 
-configuration_file = '/lab/users/Cruz/vivian/LearnRAN/KFold Classifier/KFold_v1.ini'
+configuration_file = '/lab/users/Cruz/vivian/LearnRAN/KFold Classifier/config.ini'
  
 if os.path.exists(configuration_file):
     print(f"O arquivo {configuration_file} existe.")
