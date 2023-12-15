@@ -21,7 +21,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.neighbors import NearestCentroid
 
-configuration_file = '/lab/users/Cruz/vivian/LearnRAN/KFold Classifier/config.ini'
+configuration_file = '/lab/users/Cruz/vivian/LearnRAN/Naive Bayes and MLP Classifier/config.ini'
  
 if os.path.exists(configuration_file):
     print(f"O arquivo {configuration_file} existe.")
